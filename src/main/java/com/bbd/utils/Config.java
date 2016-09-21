@@ -23,6 +23,7 @@ public class Config {
     public static int nThread = Integer.parseInt(properties.getProperty("nThread"));
     public static long millons_1 = Long.parseLong(properties.getProperty("millons_1"));
     public static long millons_5 = Long.parseLong(properties.getProperty("millons_5"));
+    public static String zkConnect = properties.getProperty("zkConnect");
 
     // XPATH页需要提取出来，可以保存到文件或者数据库中
 

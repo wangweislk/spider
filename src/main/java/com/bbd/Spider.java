@@ -41,7 +41,7 @@ public class Spider {
 
     public Spider() {
         // 爬虫向zookeeper注册临时节点
-        String connectString = "kunlundev03:2181";
+        String connectString = Config.zkConnect;
         // 重试间隔时间，重试次数
         RetryPolicy retry = new ExponentialBackoffRetry(3000, 3);
         int sessionTimeOutMs = 4; // 会话超时时间，4S ~ 45S之间
