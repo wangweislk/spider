@@ -8,7 +8,10 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.XPatherException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -19,6 +22,8 @@ import java.util.regex.Pattern;
  * Created by bbd on 2016/9/20.
  */
 public class JDProcessImpl implements Processalbe{
+
+    Logger logger = LoggerFactory.getLogger(JDProcessImpl.class);
 
     public void process(Page page) {
         String content = page.getContent();
@@ -34,8 +39,9 @@ public class JDProcessImpl implements Processalbe{
                 if(nextUrlXPath != null && nextUrlXPath.length>0){
                     TagNode nexUrlNode = (TagNode) nextUrlXPath[0];
                     String nextUrl = "http://list.jd.com"+nexUrlNode.getAttributeByName("href");
-//                    System.out.println(nextUrl);
-                    page.addUrl(nextUrl);
+                    if(!nextUrl.equals("javascript:;")){ // 排除最后一页
+                        page.addUrl(nextUrl);
+                    }
                 }
 
                 //获取当前页的所有商品
@@ -67,7 +73,6 @@ public class JDProcessImpl implements Processalbe{
             if (titleEvaluateXPath != null && titleEvaluateXPath.length > 0) {
                 TagNode titleNode = (TagNode) titleEvaluateXPath[0];
                 String title = titleNode.getAttributeByName("alt");
-//                System.out.println(title);
                 page.addField("title",title);
             }
 
@@ -76,7 +81,6 @@ public class JDProcessImpl implements Processalbe{
             if (pictureEvaluateXPath != null && pictureEvaluateXPath.length > 0) {
                 TagNode pictureNode = (TagNode) pictureEvaluateXPath[0];
                 String picurl = pictureNode.getAttributeByName("data-origin");
-//                System.out.println("http:" + picurl);
                 page.addField("pictureurl","http:"+picurl);
             }
 
@@ -91,10 +95,15 @@ public class JDProcessImpl implements Processalbe{
             page.setGoodsId(goodsId+"_jd");
             // http://p.3.cn/prices/mgets?skuIds=J_1856585
             String price_json = PageUtils.getContent("http://p.3.cn/prices/mgets?skuIds=J_" + goodsId);
-            JSONArray jsonArray = new JSONArray(price_json);
-            JSONObject jsonObject = jsonArray.getJSONObject(0);
-//            System.out.println(jsonObject.getString("p"));
-            page.addField("price",jsonObject.getString("p"));
+            if(price_json.startsWith("[")){
+                JSONArray jsonArray = new JSONArray(price_json);
+                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                page.addField("price",jsonObject.getString("p"));
+            }else{
+                logger.error("获取JSON参数错误,{}",price_json);
+            }
+
+
 
             // 参数配置 //*[@id="detail"]/div[2]/div[2]/div[2]
             JSONArray guigeArray = new JSONArray();
@@ -129,6 +138,9 @@ public class JDProcessImpl implements Processalbe{
 
         } catch (XPatherException e) {
             e.printStackTrace();
+        } catch (JSONException e){
+            e.printStackTrace();
+            logger.error("JSON解析错误");
         }
     }
 }

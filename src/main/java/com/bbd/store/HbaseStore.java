@@ -2,8 +2,10 @@ package com.bbd.store;
 
 import com.bbd.domain.Page;
 import com.bbd.utils.HbaseUtiles;
+import com.bbd.utils.RedisUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -17,8 +19,12 @@ import java.util.Map;
  * Created by bbd on 2016/9/20.
  */
 public class HbaseStore implements Storeable{
+    Logger logger = LoggerFactory.getLogger(HbaseStore.class);
 
     HbaseUtiles hbaseUtiles = new HbaseUtiles();
+    // 向redis中写入rowkey,使用es或者solr建立索引
+    RedisUtils redisUtils = new RedisUtils();
+
     public void stroe(Page page) {
         String goodsId = page.getGoodsId();
         Map<String, String> values = page.getValues();
@@ -28,8 +34,11 @@ public class HbaseStore implements Storeable{
             hbaseUtiles.put(HbaseUtiles.TABLE_NAME,goodsId,HbaseUtiles.COLUMNFAMILY_1,HbaseUtiles.COLUMNFAMILY_1_PRICE,values.get("price"));
             hbaseUtiles.put(HbaseUtiles.TABLE_NAME,goodsId,HbaseUtiles.COLUMNFAMILY_1,HbaseUtiles.COLUMNFAMILY_1_TITLE,values.get("title"));
             hbaseUtiles.put(HbaseUtiles.TABLE_NAME,goodsId,HbaseUtiles.COLUMNFAMILY_2,HbaseUtiles.COLUMNFAMILY_2_PARAM,values.get("spec"));
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            logger.error("数据爬取异常，存在NULL的数据:{} {} {} {} {}",
+                    page.getUrl(),values.get("pictureurl"),values.get("price"),values.get("title"),values.get("spec"));
         }
+        hbaseUtiles.clearConnect();
     }
 }

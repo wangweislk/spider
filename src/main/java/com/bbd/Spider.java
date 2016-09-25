@@ -6,8 +6,10 @@ import com.bbd.download.HttpClientDownloadImpl;
 import com.bbd.process.JDProcessImpl;
 import com.bbd.process.Processalbe;
 import com.bbd.repository.QueueRepository;
+import com.bbd.repository.RedisRepository;
 import com.bbd.repository.Reponstory;
 import com.bbd.store.ConsoleStoreImpl;
+import com.bbd.store.HbaseStore;
 import com.bbd.store.Storeable;
 import com.bbd.utils.Config;
 import com.bbd.utils.SleepUtiles;
@@ -40,27 +42,27 @@ public class Spider {
     private Reponstory reponstory = new QueueRepository();
 
     public Spider() {
-        // 爬虫向zookeeper注册临时节点
-        String connectString = Config.zkConnect;
-        // 重试间隔时间，重试次数
-        RetryPolicy retry = new ExponentialBackoffRetry(3000, 3);
-        int sessionTimeOutMs = 4; // 会话超时时间，4S ~ 45S之间
-        int connectTimeOutMs = 1000;
-        try {
-            // 获取当前服务器的IP
-            InetAddress localHost = InetAddress.getLocalHost();
-            String ip = localHost.getHostAddress();
-            CuratorFramework client = CuratorFrameworkFactory.newClient(connectString,sessionTimeOutMs,connectTimeOutMs,retry);
-            client.start();
-            client.create()
-                    .creatingParentsIfNeeded()//父节点如果不存在创建
-                    .withMode(CreateMode.EPHEMERAL)//指定节点类型，临时节点
-                    .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE) //指定节点权限
-                    .forPath("/spider/"+ip); //指定节点名称
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        // 爬虫向zookeeper注册临时节点
+//        String connectString = Config.zkConnect;
+//        // 重试间隔时间，重试次数
+//        RetryPolicy retry = new ExponentialBackoffRetry(3000, 3);
+//        int sessionTimeOutMs = 4; // 会话超时时间，4S ~ 45S之间
+//        int connectTimeOutMs = 1000;
+//        try {
+//            // 获取当前服务器的IP
+//            InetAddress localHost = InetAddress.getLocalHost();
+//            String ip = localHost.getHostAddress();
+//            CuratorFramework client = CuratorFrameworkFactory.newClient(connectString,sessionTimeOutMs,connectTimeOutMs,retry);
+//            client.start();
+//            client.create()
+//                    .creatingParentsIfNeeded()//父节点如果不存在创建
+//                    .withMode(CreateMode.EPHEMERAL)//指定节点类型，临时节点
+//                    .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE) //指定节点权限
+//                    .forPath("/spider/"+ip); //指定节点名称
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     /** 入口URL队列*/
@@ -189,12 +191,14 @@ public class Spider {
     public static void main(String args[]) {
         Spider spider = new Spider();
         spider.setProcess(new JDProcessImpl());
+        spider.setStore(new HbaseStore());
+        spider.setReponstory(new RedisRepository());
 //        spider.setDownload(new HttpClientDownloadImpl());
 //        spider.setStore(new ConsoleStoreImpl());
 //        spider.setReponstory(new QueueRepository());
         // 分页页面入口URL
         String url = "http://list.jd.com/list.html?cat=9987,653,655";
-        spider.setSeedUrl(url);
+//        spider.setSeedUrl(url);
         spider.start();
 
     }

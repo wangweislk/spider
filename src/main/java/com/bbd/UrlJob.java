@@ -23,7 +23,7 @@ public class UrlJob implements Job{
         System.out.println("被调用了");
 
         List<String> urls = redisUtils.lrange(RedisUtils.start_url, 0, -1);
-        // 循环吧所有URL添加到Redise仓库中
+        // 循环吧所有URL添加到Redis仓库中
         for(String url : urls){
             redisUtils.add(RedisUtils.key,url);
         }

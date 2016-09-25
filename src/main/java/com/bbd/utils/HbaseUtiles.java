@@ -21,11 +21,16 @@ import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by bbd on 2016/9/20.
  */
 public class HbaseUtiles {
+
+    Logger logger = LoggerFactory.getLogger(HbaseUtiles.class);
+
     /**
      * HBASE 表名称
      */
@@ -48,21 +53,24 @@ public class HbaseUtiles {
     public static final String COLUMNFAMILY_2_PARAM = "param";
 
 
-    HBaseAdmin admin=null;
-    Configuration conf=null;
+    HBaseAdmin admin = null;
+    Configuration conf = null;
+    HTablePool hTablePool = null;
     /**
      * 构造函数加载配置
      */
     public HbaseUtiles(){
         conf = new Configuration();
-        conf.set("hbase.zookeeper.quorum", "kunlundev03:2181,kunlundev04:2181,kunlundev05:2181");
-        conf.set("hbase.rootdir", "hdfs://kunlundev02:8020/hbase");
+        conf.set("hbase.zookeeper.quorum", Config.zkConnect);
+        conf.set("hbase.rootdir", Config.hdfs);
         try {
             admin = new HBaseAdmin(conf);
+            hTablePool = new HTablePool(conf, 1000);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public static void main(String[] args) throws Exception {
         HbaseUtiles hbase = new HbaseUtiles();
         //创建一张表
@@ -137,7 +145,6 @@ public class HbaseUtiles {
      * @param rowKey
      */
     public void deleteOneRecord(String tableName, String rowKey) {
-        HTablePool hTablePool = new HTablePool(conf, 1000);
         HTableInterface table = hTablePool.getTable(tableName);
         Delete delete = new Delete(rowKey.getBytes());
         try {
@@ -201,14 +208,16 @@ public class HbaseUtiles {
     // 添加一条记录
     public  void put(String tableName, String row, String columnFamily,
                      String column, String data) throws IOException {
-        HTablePool hTablePool = new HTablePool(conf, 1000);
+        if(data == null){
+            throw new RuntimeException("数据爬取异常，data为NULL");
+        }
         HTableInterface table = hTablePool.getTable(tableName);
         Put p1 = new Put(Bytes.toBytes(row));
         p1.add(Bytes.toBytes(columnFamily), Bytes.toBytes(column),
                 Bytes.toBytes(data));
         table.put(p1);
-        System.out.println("put'" + row + "'," + columnFamily + ":" + column
-                + "','" + data + "'");
+        System.out.println("put'" + row + "'," + columnFamily + ":" + column + "','" + data + "'");
+
     }
 
 
@@ -244,6 +253,27 @@ public class HbaseUtiles {
             tableDesc.addFamily(new HColumnDescriptor(column.getBytes()));
             admin.createTable(tableDesc);
             System.out.println(tableName+"表创建成功！");
+        }
+    }
+
+
+    public void clearConnect(){
+        if(hTablePool != null){
+            try {
+                hTablePool.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                logger.error("关闭HTablePool错误！");
+            }
+        }
+
+        if(admin != null){
+            try {
+                admin.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                logger.error("关闭Admin错误！");
+            }
         }
     }
 }

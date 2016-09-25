@@ -24,6 +24,9 @@ public class Config {
     public static long millons_1 = Long.parseLong(properties.getProperty("millons_1"));
     public static long millons_5 = Long.parseLong(properties.getProperty("millons_5"));
     public static String zkConnect = properties.getProperty("zkConnect");
+    public static String hdfs = properties.getProperty("hdfs");
+    public static String redisConnect = properties.getProperty("redisConnect");
+    public static int redisPort = Integer.parseInt(properties.getProperty("redisPort"));
 
     // XPATH页需要提取出来，可以保存到文件或者数据库中
 
