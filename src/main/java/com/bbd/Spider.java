@@ -3,6 +3,7 @@ package com.bbd;
 import com.bbd.domain.Page;
 import com.bbd.download.Downloadable;
 import com.bbd.download.HttpClientDownloadImpl;
+import com.bbd.process.AnjukeProcessImpl;
 import com.bbd.process.JDProcessImpl;
 import com.bbd.process.Processalbe;
 import com.bbd.repository.QueueRepository;
@@ -10,6 +11,7 @@ import com.bbd.repository.RedisRepository;
 import com.bbd.repository.Reponstory;
 import com.bbd.store.ConsoleStoreImpl;
 import com.bbd.store.HbaseStore;
+import com.bbd.store.MysqlStore;
 import com.bbd.store.Storeable;
 import com.bbd.utils.Config;
 import com.bbd.utils.SleepUtiles;
@@ -190,15 +192,19 @@ public class Spider {
 
     public static void main(String args[]) {
         Spider spider = new Spider();
-        spider.setProcess(new JDProcessImpl());
-        spider.setStore(new HbaseStore());
-        spider.setReponstory(new RedisRepository());
+        spider.setProcess(new AnjukeProcessImpl());
+//        spider.setStore(new HbaseStore());
+//        spider.setReponstory(new RedisRepository());
 //        spider.setDownload(new HttpClientDownloadImpl());
 //        spider.setStore(new ConsoleStoreImpl());
 //        spider.setReponstory(new QueueRepository());
+        spider.setStore(new MysqlStore());
+        spider.setReponstory(new RedisRepository(Config.redis_key_ajk));
         // 分页页面入口URL
-        String url = "http://list.jd.com/list.html?cat=9987,653,655";
+        String url = "http://cd.fang.anjuke.com/loupan/414067.html";
+//        String url = "http://cd.fang.anjuke.com/loupan/all/p1/";
 //        spider.setSeedUrl(url);
+
         spider.start();
 
     }

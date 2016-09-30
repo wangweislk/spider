@@ -75,6 +75,7 @@ public class JDProcessImpl implements Processalbe{
                 String title = titleNode.getAttributeByName("alt");
                 page.addField("title",title);
             }
+            // //*[@id="spec-img"]
 
             //图片地址
             Object[] pictureEvaluateXPath = rootNode.evaluateXPath("//*[@id=\"spec-img\"]");

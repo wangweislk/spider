@@ -19,7 +19,7 @@ public class UrlScheduler {
             // 开启调度器
             scheduler.start();
             JobDetail jobDetail = new JobDetail(UrlJob.class.getSimpleName(), Scheduler.DEFAULT_GROUP, UrlJob.class);
-            CronTrigger trigger = new CronTrigger(UrlJob.class.getSimpleName(),Scheduler.DEFAULT_GROUP,"0 35 20 ? * *");
+            CronTrigger trigger = new CronTrigger(UrlJob.class.getSimpleName(),Scheduler.DEFAULT_GROUP,"0 10 01 ? * *");
 
             scheduler.scheduleJob(jobDetail,trigger);
 

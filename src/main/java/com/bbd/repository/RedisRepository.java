@@ -1,5 +1,6 @@
 package com.bbd.repository;
 
+import com.bbd.utils.Config;
 import com.bbd.utils.RedisUtils;
 
 /**
@@ -8,12 +9,17 @@ import com.bbd.utils.RedisUtils;
  */
 public class RedisRepository implements Reponstory{
     RedisUtils redisUtils = new RedisUtils();
+    String redis_key = Config.redis_key_jd;
+
+    public RedisRepository(String key) {
+        this.redis_key = key;
+    }
 
     public String poll() {
-        return redisUtils.poll(RedisUtils.key);
+        return redisUtils.poll(this.redis_key);
     }
 
     public void add(String nextUrl) {
-        redisUtils.add(RedisUtils.key,nextUrl);
+        redisUtils.add(this.redis_key,nextUrl);
     }
 }

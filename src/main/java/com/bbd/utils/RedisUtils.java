@@ -31,6 +31,19 @@ public class RedisUtils {
 		return list;
 		
 	}
+
+	public void set(String key,String url){
+		Jedis resource = jedisPool.getResource();
+		resource.set(key,url);
+		resource.close();
+	}
+
+	public String get(String key){
+		Jedis resource = jedisPool.getResource();
+		String url = resource.get(key);
+		resource.close();
+		return url;
+	}
 	
 	public void add(String lowKey, String url) {
 		Jedis resource = jedisPool.getResource();
@@ -42,6 +55,11 @@ public class RedisUtils {
 		String result = resource.rpop(key);
 		resource.close();
 		return result;
+	}
+
+	public static void main(String[] args) {
+		RedisUtils redisUtils = new RedisUtils();
+		redisUtils.add("a","b");
 	}
 	
 }
